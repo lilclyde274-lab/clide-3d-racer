@@ -1,0 +1,54 @@
+
+name: Build CLIDE 3D RACER APK
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'Clide_3D_Racer_Android_Project.zip'
+      - '.github/workflows/build.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Extract game project
+        run: |
+          mkdir source
+          unzip -q Clide_3D_Racer_Android_Project.zip -d source
+          SETTINGS=$(find source -name settings.gradle -o -name settings.gradle.kts | head -n 1)
+          if [ -z "$SETTINGS" ]; then
+            echo "Could not find Gradle settings file"
+            exit 1
+          fi
+          PROJECT_DIR=$(dirname "$SETTINGS")
+          echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
+
+      - name: Build APK
+        run: gradle -p "$PROJECT_DIR" assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: CLIDE-3D-RACER-APK
+          path: source/**/app/build/outputs/apk/debug/*.apk
+          if-no-files-fou
+          nd: error
