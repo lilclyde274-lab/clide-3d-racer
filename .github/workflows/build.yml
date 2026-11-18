@@ -51,4 +51,5 @@ jobs:
           name: CLIDE-3D-RACER-APK
           path: source/**/app/build/outputs/apk/debug/*.apk
           if-no-files-fou
-          nd: error
+          nd: error          
+          if-no-files-found: error
